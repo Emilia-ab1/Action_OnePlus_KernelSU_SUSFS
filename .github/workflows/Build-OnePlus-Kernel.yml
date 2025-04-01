@@ -136,7 +136,7 @@ jobs:
           elif [ "${{ github.event.inputs.kernelsu_variant }}" == "RKSU" ]; then
             curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/main/kernel/setup.sh" | bash -s susfs-v1.5.5
           elif [ "${{ github.event.inputs.kernelsu_variant }}" == "SKSU" ]; then
-            curl -LSs "https://raw.githubusercontent.com/ShirkNeko/KernelSU/main/kernel/setup.sh" | bash -s susfs-dev
+            curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-dev
           fi
           
       - name: Apply SUSFS Patches KernelSU
@@ -199,11 +199,13 @@ jobs:
           if [ "${{ github.event.inputs.kernelsu_variant }}" == "SKSU" ]; then
              echo "CONFIG_KSU_VFS=y" >> ./common/arch/arm64/configs/gki_defconfig
              echo "CONFIG_KSU_MANUAL_HOOK=y" >> ./common/arch/arm64/configs/gki_defconfig
+             echo "CONFIG_KPM=y" >> ./common/arch/arm64/configs/gki_defconfig
           else
              echo "CONFIG_KSU_WITH_KPROBES=n" >> ./common/arch/arm64/configs/gki_defconfig
           fi
           
           echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
+          #echo "CONFIG_KPM=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> ./common/arch/arm64/configs/gki_defconfig
