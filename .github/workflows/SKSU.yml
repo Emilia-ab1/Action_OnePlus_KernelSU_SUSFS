@@ -131,17 +131,17 @@ jobs:
         run: |
           npm install -g commitlint conventional-changelog-cli
 
-      - name: Generate Changelog
-        uses: conventional-changelog/gh-release@v2
-        id: changelog
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ github.ref_name }}
-          path: ./CHANGELOG.md
-          config: .github/commitlint.config.js
-          exclude: 'chore|docs|test'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+ #     - name: Generate Changelog
+  #      uses: conventional-changelog/gh-release@v2
+   #     id: changelog
+    #    with:
+#          token: ${{ secrets.GITHUB_TOKEN }}
+  #        version: ${{ github.ref_name }}
+#          path: ./CHANGELOG.md
+ #         config: .github/commitlint.config.js
+#          exclude: 'chore|docs|test'
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v4
@@ -149,7 +149,18 @@ jobs:
         with:
           tag_name:         ${{ github.event.inputs.FEIL }}_v${{ github.event.inputs.KERNEL_VERSION }}_${{ format('{0:0{1}}', github.run_number, 3) }}
           release_name:     KernelSU-${{ env.KSUVER }}-${{ github.event.inputs.FEIL }}
-          body_path:        .github/RELEASE_TEMPLATE.md
+          body:    |
+                     ${{ steps.changelog.outputs.changelog }}
+      
+                     **构建参数**
+                     - 设备名称：${{ github.event.inputs.FEIL }}
+                     - 内核版本：${{ github.event.inputs.KERNEL_VERSION }}
+                     - Android版本：${{ github.event.inputs.ANDROID_VERSION }}
+                     - KSU版本：${{ env.KSUVER }}
+      
+                     **下载地址**
+                     - [AnyKernel3 包](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/AnyKernel3.zip)
+                     - [内核镜像](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Image)
           assets:           |
             ./AnyKernel3/Image
             ./kernel_workspace/kernel/Image
