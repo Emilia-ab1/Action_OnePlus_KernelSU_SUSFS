@@ -236,7 +236,7 @@ jobs:
          fi
 
          if [[ "${{ github.event.inputs.KERNEL_VER }}" == "default" ]]; then
-            KSU_VERSION=$(( $(git rev-list --count HEAD) + 10200 ))
+            KSU_VERSION=$(( $(git rev-list --count HEAD) + 12606 ))
          else
             KSU_VERSION=${{ github.event.inputs.KERNEL_VER }}
          fi
