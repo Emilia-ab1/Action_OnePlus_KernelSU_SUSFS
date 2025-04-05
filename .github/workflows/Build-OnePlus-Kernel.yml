@@ -213,20 +213,20 @@ jobs:
             cd kernel_workspace/kernel_platform/KernelSU-Next
             MAKE_FILE="kernel/Makefile"
             BASE_VERSION=11998
-          elif [[ "${{ github.event.inputs.kernelsu_variant }}" == "SukiSU" ]]; then
+          elif [[ "${{ github.event.inputs.kernelsu_variant }}" == "SKSU" ]]; then
             cd kernel_workspace/kernel_platform/KernelSU
             MAKE_FILE="kernel/Makefile"
-            BASE_VERSION=16
+            DEFAULT_VERSION=16
           else
             cd kernel_workspace/kernel_platform/KernelSU
             MAKE_FILE="kernel/Makefile"
-            BASE_VERSION=16
+            DEFAULT_VERSION=16
           fi
 
           # 计算版本号
           if [[ "${{ github.event.inputs.KERNEL_VER }}" == "default" ]]; then
             # 使用当前分支提交次数 + 基础偏移量
-            if [[ "${{ github.event.inputs.kernelsu_variant }}" == "SukiSU" ]]; then
+            if [[ "${{ github.event.inputs.kernelsu_variant }}" == "SKSU" ]]; then
               KSU_VERSION=$(( $(git rev-list --count main) + 12606 ))
             else
               KSU_VERSION=$(( $(git rev-list --count HEAD) + 10200 ))
@@ -236,7 +236,7 @@ jobs:
           fi
 
           # 替换 Makefile 中的版本号
-          sed -i "s/DKSU_VERSION=${BASE_VERSION}/DKSU_VERSION=${KSU_VERSION}/" "${MAKE_FILE}"
+          #sed -i "s/DKSU_VERSION=${BASE_VERSION}/DKSU_VERSION=${KSU_VERSION}/" "${MAKE_FILE}"
           echo "KSUVER=${KSU_VERSION}" >> $GITHUB_ENV
       - name: Add make name
         run: |
