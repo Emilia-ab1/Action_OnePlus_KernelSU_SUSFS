@@ -257,34 +257,7 @@ jobs:
           rm -rf ./AnyKernel3/.git
           cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./AnyKernel3/
           cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./kernel_workspace/kernel
-      - name: 🚀 Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        id: release
-        with:
-          tag_name:         ${{ github.event.inputs.FEIL }}_v${{ github.event.inputs.KERNEL_VERSION }}_${{ format('{0:03d}', github.run_number) }}
-          release_name:     KernelSU-${{ env.KSUVER }}-${{ github.event.inputs.FEIL }}
-          body:    |
-                     ${{ steps.changelog.outputs.changelog }}
       
-                     **构建参数**
-                     - 设备名称：${{ github.event.inputs.FEIL }}
-                     - 内核版本：${{ github.event.inputs.KERNEL_VERSION }}
-                     - Android版本：${{ github.event.inputs.ANDROID_VERSION }}
-                     - KSU版本：${{ env.KSUVER }}
-      
-                     **下载地址**
-                     - [AnyKernel3 包](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/AnyKernel3.zip)
-                     - [内核镜像](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Image)
-          assets:           |
-            ./AnyKernel3/Image
-            ./kernel_workspace/kernel/Image
-          draft:            false
-          prerelease:       ${{ github.event.inputs.prerelease || false }}
-          generate_release_notes: false
-          fail_on_unmatched: false
-          files_glob:       '**/*'
-        env:
-          GITHUB_TOKEN:     ${{ secrets.GITHUB_TOKEN }}
       - name: Upload AnyKernel3
         uses: actions/upload-artifact@v4
         with:
