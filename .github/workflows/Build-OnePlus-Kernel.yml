@@ -56,15 +56,10 @@ on:
         required: true
         type: boolean
         default: true
-     # SUSFS_CI:
-       # description: "SUSFS调用CI"
-       # required: true
-       # type: boolean
-      #  default: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
@@ -75,37 +70,32 @@ jobs:
           remove-android: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
-
       - name: Configure Git
         run: |
-         git config --global user.name "ychenxuan"
-         git config --global user.email "3494167979@qq.com"
-
+          git config --global user.name "ychenxuan"
+          git config --global user.email "3494167979@qq.com"
       - name: Install dependencies
         run: |
-         sudo apt update && sudo apt upgrade -y
-         sudo apt install -y python3 git curl
-
+          sudo apt update && sudo apt upgrade -y
+          sudo apt install -y python3 git curl
       - name: Install repo tool
         run: |
-         curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
-         chmod a+x ~/repo
-         sudo mv ~/repo /usr/local/bin/repo
-
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
+          chmod a+x ~/repo
+          sudo mv ~/repo /usr/local/bin/repo
       - name: Initialize repo and sync
         run: |
-         mkdir kernel_workspace && cd kernel_workspace
-         repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
-         repo sync
-         rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports!"
-         rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
-         sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
-         sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
-         sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
-         sed -i 's/ -dirty//g' kernel_platform/build/kernel/kleaf/workspace_status_stamp.py
-         sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/common/scripts/setlocalversion
-         git add -A
-
+          mkdir kernel_workspace && cd kernel_workspace
+          repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
+          repo sync
+          rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports!"
+          rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
+          sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
+          sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
+          sed -i 's/ -dirty//g' kernel_platform/external/dtc/scripts/setlocalversion
+          sed -i 's/ -dirty//g' kernel_platform/build/kernel/kleaf/workspace_status_stamp.py
+          sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' kernel_platform/common/scripts/setlocalversion
+          git add -A
       - name: KernelSU & MKSU version
         if: ${{ github.event.inputs.kernelsu_variant == 'Official' || github.event.inputs.kernelsu_variant == 'MKSU' }}
         run: |
@@ -114,7 +104,6 @@ jobs:
           elif [[ "${{ github.event.inputs.kernelsu_version }}" == "main" ]]; then
             echo "BRANCH=-s main" >> $GITHUB_ENV
           fi
-
       - name: kernelsu-next version
         if: ${{ github.event.inputs.kernelsu_variant == 'Next' }}
         run: |
@@ -123,7 +112,6 @@ jobs:
           elif [[ "${{ github.event.inputs.kernelsu_version }}" == "main" ]]; then
             echo "BRANCH=-s next" >> $GITHUB_ENV
           fi
-         
       - name: Add KernelSU
         run: |
           cd kernel_workspace/kernel_platform
@@ -138,7 +126,6 @@ jobs:
           elif [ "${{ github.event.inputs.kernelsu_variant }}" == "SKSU" ]; then
             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-dev
           fi
-          
       - name: Apply SUSFS Patches KernelSU
         if: github.event.inputs.SUSFS_ENABLED == 'true'
         run: |
@@ -149,7 +136,6 @@ jobs:
           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch ./common/
           cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
-          
           if [ "${{ github.event.inputs.kernelsu_variant }}" == "Official" ]; then
             cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU
             cd ./KernelSU
@@ -173,29 +159,23 @@ jobs:
           elif [ "${{ github.event.inputs.kernelsu_variant }}" == "RKSU" ]; then
             cd KernelSU
           fi
-          
           cd ../common
           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}.patch || true
-         # cp ../../kernel_patches4mksu/69_hide_stuff.patch ./
-         # patch -p1 -F 3 < 69_hide_stuff.patch
-           
       - name: Apply New Hooks Patches
         if: ${{ github.event.inputs.SUSFS_ENABLED == 'true' }}
         run: |
-         cd kernel_workspace/kernel_platform/common
-         if [ "${{ github.event.inputs.kernelsu_variant }}" = "Next" ]; then
+          cd kernel_workspace/kernel_platform/common
+          if [ "${{ github.event.inputs.kernelsu_variant }}" = "Next" ]; then
             cp ../../kernel_patches4mksu/next/syscall_hooks.patch ./
             patch -p1 -F 3 < syscall_hooks.patch
-         elif [ "${{ github.event.inputs.kernelsu_variant }}" = "SKSU" ] || [ "${{ github.event.inputs.kernelsu_variant }}" = "MKSU" ]; then
+          elif [ "${{ github.event.inputs.kernelsu_variant }}" = "SKSU" ] || [ "${{ github.event.inputs.kernelsu_variant }}" = "MKSU" ]; then
             cp ../../kernel_patches4mksu/hooks/new_hooks.patch ./
             patch -p1 -F 3 < new_hooks.patch
-         fi
-          
+          fi
       - name: Add SUSFS Configuration Settings
         if: github.event.inputs.SUSFS_ENABLED == 'true'
         run: |
-         cd kernel_workspace/kernel_platform
-
+          cd kernel_workspace/kernel_platform
           if [ "${{ github.event.inputs.kernelsu_variant }}" == "SKSU" ]; then
              echo "CONFIG_KSU_VFS=y" >> ./common/arch/arm64/configs/gki_defconfig
              echo "CONFIG_KSU_MANUAL_HOOK=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -203,7 +183,6 @@ jobs:
           else
              echo "CONFIG_KSU_WITH_KPROBES=n" >> ./common/arch/arm64/configs/gki_defconfig
           fi
-          
           echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -222,73 +201,48 @@ jobs:
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
-          
       - name: Handle KernelSU Version
         run: |
-         if [[ "${{ github.event.inputs.kernelsu_variant }}" == "Next" ]]; then
+          if [[ "${{ github.event.inputs.kernelsu_variant }}" == "Next" ]]; then
             cd kernel_workspace/kernel_platform/KernelSU-Next
             MAKE_FILE="kernel/Makefile"
             DEFAULT_VERSION=11998  
-         else
+          else
             cd kernel_workspace/kernel_platform/KernelSU
             MAKE_FILE="kernel/Makefile"
             DEFAULT_VERSION=16    
-         fi
-
-         if [[ "${{ github.event.inputs.KERNEL_VER }}" == "default" ]]; then
+          fi
+          if [[ "${{ github.event.inputs.KERNEL_VER }}" == "default" ]]; then
             KSU_VERSION=$(( $(git rev-list --count HEAD) + 12606 ))
-         else
+          else
             KSU_VERSION=${{ github.event.inputs.KERNEL_VER }}
-         fi
-    
-         sed -i "s/DKSU_VERSION=${DEFAULT_VERSION}/DKSU_VERSION=${KSU_VERSION}/" "${MAKE_FILE}"
-         echo "KSUVER=${KSU_VERSION}" >> $GITHUB_ENV
-
+          fi
+          sed -i "s/DKSU_VERSION=${DEFAULT_VERSION}/DKSU_VERSION=${KSU_VERSION}/" "${MAKE_FILE}"
+          echo "KSUVER=${KSU_VERSION}" >> $GITHUB_ENV
       - name: Add make name
         run: |
-         cd kernel_workspace/kernel_platform
-         sed -i '$s|echo "\$res"|echo "\${{ github.event.inputs.KERNEL_NAME }}"|' ./common/scripts/setlocalversion
-         sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" ./build/kernel/kleaf/impl/stamp.bzl
-      
+          cd kernel_workspace/kernel_platform
+          sed -i '$s|echo "\$res"|echo "\${{ github.event.inputs.KERNEL_NAME }}"|' ./common/scripts/setlocalversion
+          sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" ./build/kernel/kleaf/impl/stamp.bzl
       - name: Build kernel
         run: |
-         cd kernel_workspace
-         if [ "${{ github.event.inputs.CPU }}" = "sm8650" ]; then
+          cd kernel_workspace
+          if [ "${{ github.event.inputs.CPU }}" = "sm8650" ]; then
             ./kernel_platform/build_with_bazel.py -t ${{ github.event.inputs.CPUD }} gki
-         else
+          else
             LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
-         fi         
-         
+          fi
       - name: Make AnyKernel3
         run: |
-         git clone https://github.com/Kernel-SU/AnyKernel3 --depth=1
-         rm -rf ./AnyKernel3/.git
-         cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./AnyKernel3/
-         cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./kernel_workspace/kernel
-         
-    #  - name: Download Latest SUSFS Module from CI
-     #   if: ${{ github.event.inputs.SUSFS_CI == 'true' }}
-#        run: |
- #         LATEST_RUN_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
- #           "https://api.github.com/repos/sidex15/susfs4ksu-module/actions/runs" | jq -r '.workflow_runs[0].id')
-          
-  #        ARTIFACT_URL=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-    #        "https://api.github.com/repos/sidex15/susfs4ksu-module/actions/runs/$LATEST_RUN_ID/artifacts" | jq -r '.artifacts[0].archive_download_url')
-          
-    #      curl -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o ksu_module_susfs.zip "$ARTIFACT_URL"
-    #      cp ksu_module_susfs.zip ./AnyKernel3/
-
-     # - name: Download Latest SUSFS Module from Release
-      #  if: ${{ github.event.inputs.SUSFS_CI == 'false' }}
-#        run: |
-#          wget https://github.com/sidex15/ksu_module_susfs/releases/latest/download/ksu_module_susfs_1.5.2+.zip
-#          cp ksu_module_susfs_1.5.2+.zip ./AnyKernel3/   
-
+          git clone https://github.com/Kernel-SU/AnyKernel3 --depth=1
+          rm -rf ./AnyKernel3/.git
+          cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./AnyKernel3/
+          cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./kernel_workspace/kernel
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v2
         id: release
         with:
-          tag_name:         ${{ github.event.inputs.FEIL }}_v${{ github.event.inputs.KERNEL_VERSION }}_${{ format('{0:0{1}}', github.run_number, 3) }}
+          tag_name:         ${{ github.event.inputs.FEIL }}_v${{ github.event.inputs.KERNEL_VERSION }}_${{ format('{0:03d}', github.run_number) }}
           release_name:     KernelSU-${{ env.KSUVER }}-${{ github.event.inputs.FEIL }}
           body:    |
                      ${{ steps.changelog.outputs.changelog }}
@@ -312,16 +266,13 @@ jobs:
           files_glob:       '**/*'
         env:
           GITHUB_TOKEN:     ${{ secrets.GITHUB_TOKEN }}
-          
-         
       - name: Upload AnyKernel3
         uses: actions/upload-artifact@v4
         with:
-         name: AnyKernel3_KernelSU_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
-         path: ./AnyKernel3/*
-
+          name: AnyKernel3_KernelSU_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
+          path: ./AnyKernel3/*
       - name: Upload Image
         uses: actions/upload-artifact@v4
         with:
-         name: Image_KernelSU_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
-         path: kernel_workspace/kernel
+          name: Image_KernelSU_${{ env.KSUVER }}_${{ github.event.inputs.FEIL }}
+          path: kernel_workspace/kernel
