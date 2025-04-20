@@ -22,10 +22,6 @@ on:
         description: "内核版本"
         required: true
         default: '6.1'
-      KERNEL_NAME:
-        description: "修改内核名称"
-        required: false
-        default: ''
       kernelsu_variant:
         description: "选择 KSU"
         required: true
